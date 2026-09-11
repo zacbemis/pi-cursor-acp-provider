@@ -21,9 +21,9 @@ try {
 	}
 	const models = execFileSync("pi", ["--no-extensions", "--no-skills", "--no-prompt-templates", "--offline", "-e", path.join(installed, "extensions/index.ts"), "--list-models", "cursor-acp"], {
 		encoding: "utf8",
-		env: { ...process.env, PI_CURSOR_ACP_COMMAND: path.join(temporary, "missing-cursor-agent") },
+		env: { ...process.env, PI_OFFLINE: "1", CURSOR_API_KEY: "packed-smoke-placeholder", PI_CURSOR_ACP_COMMAND: path.join(temporary, "missing-cursor-agent") },
 	});
-	if (!models.includes("cursor-acp") || !models.includes("default")) throw new Error("Packed extension did not register the offline Cursor model");
+	if (!models.includes("cursor-acp") || !models.includes("default")) throw new Error(`Packed extension did not register the offline Cursor model: ${models}`);
 	process.stdout.write("Packed install passed with runtime dependencies and offline provider registration.\n");
 } finally {
 	fs.rmSync(temporary, { recursive: true, force: true });

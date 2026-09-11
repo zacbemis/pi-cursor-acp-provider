@@ -9,7 +9,7 @@ let tarball;
 
 try {
 	const output = JSON.parse(execFileSync("npm", ["pack", "--json"], { cwd: root, encoding: "utf8" }));
-	const packed = Array.isArray(output) ? output[0] : output;
+	const packed = Array.isArray(output) ? output[0] : output.filename ? output : output["pi-cursor-acp-provider"];
 	if (!packed?.filename) throw new Error(`Unexpected npm pack result: ${JSON.stringify(output)}`);
 	tarball = path.join(root, packed.filename);
 	fs.writeFileSync(path.join(temporary, "package.json"), '{"private":true}\n');

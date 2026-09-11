@@ -8,7 +8,9 @@ const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "pi-cursor-acp-pack-"));
 let tarball;
 
 try {
-	const packed = JSON.parse(execFileSync("npm", ["pack", "--json"], { cwd: root, encoding: "utf8" }))[0];
+	const output = JSON.parse(execFileSync("npm", ["pack", "--json"], { cwd: root, encoding: "utf8" }));
+	const packed = Array.isArray(output) ? output[0] : output;
+	if (!packed?.filename) throw new Error(`Unexpected npm pack result: ${JSON.stringify(output)}`);
 	tarball = path.join(root, packed.filename);
 	fs.writeFileSync(path.join(temporary, "package.json"), '{"private":true}\n');
 	execFileSync("npm", ["install", "--ignore-scripts", "--legacy-peer-deps", tarball], { cwd: temporary, stdio: "inherit" });

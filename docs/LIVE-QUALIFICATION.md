@@ -220,6 +220,12 @@ Implications:
 
 This behavior matches the replay sequence described in historical T3 issue #3149. Current T3 code contains explicit replay suppression and an idle-gap gate.
 
+## Fable account-policy gate
+
+A later live diagnostic selected `claude-fable-5-1` successfully through ACP, but its prompt emitted only an assistant chunk containing `Check your settings to continue` and returned `end_turn`. Running the same model through Cursor CLI exposed the real error: `ActionRequiredError: Review Data Policy`.
+
+Cursor lists Fable as available before its separate 30-day Anthropic retention policy is accepted. The provider now recognizes this opaque ACP response, suppresses it as normal assistant content, and returns an actionable error directing the user to Cursor's Models/Model Access policy review. Acceptance remains an account/team decision outside the provider.
+
 ## CLI flags observed locally
 
 The root help currently includes:

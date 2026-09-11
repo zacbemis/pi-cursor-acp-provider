@@ -89,6 +89,14 @@ Permission policies map to Cursor startup as follows:
 - Exposes enabled Pi tools to Cursor as `pi_<tool>` over a bearer-authenticated loopback MCP server; Pi remains the executor.
 - Cancels active prompts and force-terminates unresponsive process trees after a bounded grace period.
 
+## Fable 5/5.1 data-policy gate
+
+Cursor lists Fable in ACP model discovery even before its separate retention policy has been accepted. If Cursor returns `Check your settings to continue`, open the Cursor web dashboard and go to **Settings → Models/Model Access → Claude Fable 5.1 → View Policy**, review and accept the policy, then retry. Team accounts may require an administrator.
+
+The provider cannot accept a data policy on your behalf. It detects Cursor's otherwise opaque response and reports these instructions as an actionable error.
+
+See [Cursor's Fable documentation](https://cursor.com/docs/models/claude-fable-5).
+
 ## Security boundary
 
 Cursor's native shell, edit, search, web, rules, plugins, and configured MCP tools execute inside the Cursor Agent process. They do **not** pass through Pi's tool hooks. Disabling ACP filesystem/terminal callbacks does not sandbox Cursor.

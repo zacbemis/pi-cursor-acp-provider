@@ -16,8 +16,8 @@ const user = (text: string, timestamp = Date.now()) => ({ role: "user" as const,
 function make(store = new AcpSessionStore(path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cursor-runtime-")), "sessions.json"))) {
 	return new CursorRuntime({ permissions: "prompt", mode: "ask", piTools: false }, (options) => new CursorAcpConnection({ ...options, command: process.execPath, args: [fixture], operationTimeoutMs: 3_000, initializeTimeoutMs: 3_000 }), store);
 }
-async function finish(runtime: CursorRuntime, context: Context, sessionId?: string) {
-	const writer = runtime.stream(model, context, { ...(sessionId ? { sessionId } : {}), reasoning: "low" });
+async function finish(runtime: CursorRuntime, context: Context, sessionId?: string, selectedModel = model) {
+	const writer = runtime.stream(selectedModel, context, { ...(sessionId ? { sessionId } : {}), reasoning: "low" });
 	for await (const _event of writer.stream) { /* drain */ }
 	return writer.message;
 }
@@ -31,6 +31,17 @@ describe("Cursor runtime", () => {
 			expect(visible(message)).toBe("Hello");
 			expect(message.content.some((item) => item.type === "thinking")).toBe(true);
 			expect(message.stopReason).toBe("stop");
+		} finally { await runtime.close(); }
+	});
+
+	it("turns Cursor's opaque Fable settings response into an actionable error", async () => {
+		const runtime = make();
+		const fable = { ...model, id: "claude-fable-5-1", name: "Claude Fable 5.1" };
+		try {
+			const message = await finish(runtime, { systemPrompt: "", messages: [user("hello")], tools: [] }, undefined, fable);
+			expect(message.stopReason).toBe("error");
+			expect(message.errorMessage).toContain("data-retention policy");
+			expect(visible(message)).not.toContain("Check your settings");
 		} finally { await runtime.close(); }
 	});
 

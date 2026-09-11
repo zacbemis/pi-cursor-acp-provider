@@ -21,7 +21,7 @@ import {
 	type CursorCreatePlan,
 } from "./acp/cursor-extension.js";
 import { abortError, CursorAcpError } from "./acp/errors.js";
-import { mapSessionUpdate } from "./acp/events.js";
+import { cursorActionRequired, mapSessionUpdate } from "./acp/events.js";
 import { AcpSessionStore } from "./acp/session-store.js";
 import type { CursorAcpConfig, CursorMode, PermissionMode } from "./config.js";
 import {
@@ -104,6 +104,7 @@ interface Binding {
 	piSessionId: string | undefined;
 	restored: boolean;
 	completedTurns: number;
+	actionRequired: string | undefined;
 }
 
 export interface RuntimeSnapshot {
@@ -300,10 +301,12 @@ export class CursorRuntime {
 			const parts = adaptPromptToCapabilities(buildPromptParts(context, fresh, unseenStart), binding.initialize);
 			binding.pendingContextCount = context.messages.length;
 			binding.pendingContextFingerprint = messagesFingerprint(context.messages);
+			binding.actionRequired = undefined;
 			binding.turnCompletion = new Promise((resolve) => { completeTurn = resolve; });
 			const response = await binding.connection.prompt({ sessionId: binding.session.sessionId, prompt: parts.prompt }, options.signal);
 			const activeWriter = binding.writer ?? writer;
 			if (binding.abortRequested) throw abortError();
+			if (binding.actionRequired) throw new CursorAcpError("action_required", binding.actionRequired);
 			activeWriter.message.usage = usageFromPrompt(response);
 			activeWriter.message.rawStopReason = response.stopReason;
 			binding.messageCount = binding.pendingContextCount || parts.messageCount;
@@ -315,7 +318,7 @@ export class CursorRuntime {
 			activeWriter.done(response.stopReason === "max_tokens" || response.stopReason === "max_turn_requests" ? "length" : "stop");
 		} catch (error) {
 			binding.writer?.fail(error, isAbort(error));
-			if (!binding.connection.process.alive) await this.dropBinding(key, binding);
+			if (!binding.connection.process.alive || (error instanceof CursorAcpError && error.code === "action_required")) await this.dropBinding(key, binding);
 			throw error;
 		} finally {
 			completeTurn?.();
@@ -385,7 +388,7 @@ export class CursorRuntime {
 				pendingTools: new Map(), toolBatchTimer: undefined, bridge,
 				toolFingerprint: piToolFingerprint(tools), turnCompletion: undefined,
 				abortRequested: false, piSessionId, restored,
-				completedTurns: restored ? 1 : 0,
+				completedTurns: restored ? 1 : 0, actionRequired: undefined,
 			};
 			binding = created;
 			await this.applyConfiguration(created, modelId, undefined, signal);
@@ -492,7 +495,11 @@ export class CursorRuntime {
 	private consumeUpdate(binding: Binding | undefined, notification: SessionNotification): void {
 		if (!binding || notification.sessionId !== binding.session.sessionId || !binding.writer) return;
 		for (const activity of mapSessionUpdate(notification)) {
-			if (activity.type === "text") binding.writer.text(activity.delta);
+			if (activity.type === "text") {
+				const required = cursorActionRequired(binding.modelId, activity.delta);
+				if (required) binding.actionRequired = required;
+				else binding.writer.text(activity.delta);
+			}
 			else if (activity.type === "thought") binding.writer.thinking(activity.delta);
 			else if (activity.type === "tool" || activity.type === "plan" || activity.type === "status") binding.writer.thinking(activity.text);
 		}

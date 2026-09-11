@@ -5,7 +5,8 @@ export type CursorAcpErrorCode =
 	| "timeout"
 	| "aborted"
 	| "process_exit"
-	| "invalid_input";
+	| "invalid_input"
+	| "action_required";
 
 export class CursorAcpError extends Error {
 	constructor(readonly code: CursorAcpErrorCode, message: string, options?: ErrorOptions) {

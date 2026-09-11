@@ -15,7 +15,7 @@ describe("Cursor ACP connection", () => {
 			await connection.authenticate({ methodId: "cursor_login" });
 			const session = await connection.newSession(process.cwd());
 			const listed = await connection.listAvailableModels(session.sessionId);
-			expect(listed.models).toHaveLength(2);
+			expect(listed.models).toHaveLength(3);
 			const options = await connection.setConfig(session.sessionId, "model", "test-model");
 			expect(options.find((item) => item.id === "model")?.currentValue).toBe("test-model");
 		} finally { await connection.close(); }

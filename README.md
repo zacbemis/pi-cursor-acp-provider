@@ -20,13 +20,13 @@ Qualified locally against Cursor Agent `2026.09.02-c22c1a3` and ACP v1.
 
 ## Install
 
-After the 0.1.0 npm release is published, install the package listed in Pi's package gallery:
+Install the published npm package:
 
 ```bash
 pi install npm:pi-cursor-acp-provider
 ```
 
-The release candidate can be installed directly from GitHub:
+Alternatively, install directly from GitHub:
 
 ```bash
 pi install git:github.com/zacbemis/pi-cursor-acp-provider

@@ -394,7 +394,7 @@ Never market default ACP mode as a sandbox.
 
 ## Antigravity reuse map
 
-Source snapshot: `/home/zacb/projects/pi-gemini-acp-provider`, commit `ff3c13c33ba8c378393382e958d32cb2e4bd6e78`, MIT licensed.
+Source snapshot: `~/projects/pi-gemini-acp-provider`, commit `ff3c13c33ba8c378393382e958d32cb2e4bd6e78`, MIT licensed.
 
 | Existing area | Reuse | Cursor change |
 |---|---|---|

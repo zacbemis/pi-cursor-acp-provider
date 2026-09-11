@@ -5,8 +5,8 @@
 Probe date: **2026-09-11**
 
 ```text
-cursor-agent path: /home/zacb/.local/bin/cursor-agent
-agent path:        /home/zacb/.local/bin/agent
+cursor-agent path: ~/.local/bin/cursor-agent
+agent path:        ~/.local/bin/agent
 version:           2026.09.02-c22c1a3
 auth:              logged in (identity intentionally omitted)
 transport:         cursor-agent acp over stdio

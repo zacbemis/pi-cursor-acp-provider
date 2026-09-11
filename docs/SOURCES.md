@@ -35,7 +35,7 @@ Installed Pi documentation reviewed completely for the relevant interfaces:
 Installed under:
 
 ```text
-/home/zacb/.nvm/versions/node/v24.19.0/lib/node_modules/
+~/.nvm/versions/node/v24.19.0/lib/node_modules/
   @earendil-works/pi-coding-agent/
 ```
 
@@ -52,7 +52,7 @@ Key conclusions from Pi docs:
 ### Antigravity provider
 
 - Repository: [zacbemis/pi-antigravity-acp-provider](https://github.com/zacbemis/pi-antigravity-acp-provider)
-- Local source directory: `/home/zacb/projects/pi-gemini-acp-provider`
+- Local source directory: `~/projects/pi-gemini-acp-provider`
 - Commit: `ff3c13c33ba8c378393382e958d32cb2e4bd6e78`
 - License: MIT
 

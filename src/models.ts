@@ -3,6 +3,8 @@ import type { Model, ThinkingLevel, ThinkingLevelMap } from "@earendil-works/pi-
 import { API_ID, PROVIDER_ID } from "./constants.js";
 
 const ZERO_COST = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } as const;
+const MAX_MODELS = 256;
+const MAX_CONFIG_OPTIONS = 32;
 
 export interface CursorModelDefinition {
 	id: string;
@@ -15,14 +17,14 @@ export const FALLBACK_DEFINITIONS: CursorModelDefinition[] = [definition("defaul
 export const FALLBACK_MODELS = FALLBACK_DEFINITIONS.map((item) => item.model);
 
 export function parseModelExtension(response: Record<string, unknown>): CursorModelDefinition[] {
-	const values = Array.isArray(response.models) ? response.models : [];
+	const values = Array.isArray(response.models) ? response.models.slice(0, MAX_MODELS) : [];
 	return values.flatMap((value) => {
 		if (!value || typeof value !== "object") return [];
 		const record = value as Record<string, unknown>;
 		const id = typeof record.value === "string" ? record.value : typeof record.modelId === "string" ? record.modelId : undefined;
 		if (!id || !validId(id)) return [];
 		const name = typeof record.name === "string" && record.name.trim() ? record.name.trim() : id;
-		const configOptions = Array.isArray(record.configOptions) ? record.configOptions as SessionConfigOption[] : [];
+		const configOptions = Array.isArray(record.configOptions) ? record.configOptions.slice(0, MAX_CONFIG_OPTIONS) as SessionConfigOption[] : [];
 		return [definition(id, name, configOptions)];
 	});
 }

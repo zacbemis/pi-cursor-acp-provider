@@ -24,6 +24,7 @@ const DEFAULT_CONFIG: CursorAcpConfig = {
 
 export function loadConfig(file = CONFIG_PATH): CursorAcpConfig {
 	try {
+		if (fs.statSync(file).size > 64 * 1024) return { ...DEFAULT_CONFIG };
 		const value = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, unknown>;
 		return {
 			permissions: isPermissionMode(value.permissions) ? value.permissions : DEFAULT_CONFIG.permissions,

@@ -29,7 +29,11 @@ export class AcpSessionStore {
 	remove(piSessionId: string): void { this.write(this.read().filter((item) => item.piSessionId !== piSessionId)); }
 	clear(): void { fs.rmSync(this.file, { force: true }); }
 	private read(): SavedSessionRecord[] {
-		try { const parsed: unknown = JSON.parse(fs.readFileSync(this.file, "utf8")); return Array.isArray(parsed) ? parsed.filter(validRecord) : []; }
+		try {
+			if (fs.statSync(this.file).size > 1024 * 1024) return [];
+			const parsed: unknown = JSON.parse(fs.readFileSync(this.file, "utf8"));
+			return Array.isArray(parsed) ? parsed.slice(0, MAX_RECORDS).filter(validRecord) : [];
+		}
 		catch { return []; }
 	}
 	private write(records: SavedSessionRecord[]): void {

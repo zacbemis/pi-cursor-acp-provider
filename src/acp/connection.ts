@@ -53,9 +53,8 @@ export class CursorAcpConnection {
 		let rejectProtocol!: (error: Error) => void;
 		this.protocolFailure = new Promise<never>((_resolve, reject) => { rejectProtocol = reject; });
 		void this.protocolFailure.catch(() => undefined);
-		this.processFailure = this.process.exited.then(({ code, signal, stderrTail }) => {
-			const detail = stderrTail.trim() ? `: ${stderrTail.trim()}` : "";
-			throw new CursorAcpError("process_exit", `Cursor ACP exited with ${signal ? `signal ${signal}` : `code ${String(code)}`}${detail}`);
+		this.processFailure = this.process.exited.then(({ code, signal }) => {
+			throw new CursorAcpError("process_exit", `Cursor ACP exited with ${signal ? `signal ${signal}` : `code ${String(code)}`}. Stderr was withheld from conversation output.`);
 		});
 		void this.processFailure.catch(() => undefined);
 		const stream = boundedNdjsonStream(this.process.output, this.process.input, {

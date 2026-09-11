@@ -250,7 +250,7 @@ export class CursorRuntime {
 				binding.pendingContextFingerprint = messagesFingerprint(context.messages);
 				binding.interaction = undefined;
 				clearTimeout(pending.timer);
-				pending.resolve(result.response as never);
+				pending.resolve(validateInteractionResponse(pending, result.response) as never);
 				await this.awaitContinuation(binding, options.signal);
 				return;
 			}
@@ -587,6 +587,46 @@ function fallbackResponse(toolName: string): Record<string, unknown> {
 	if (toolName === QUESTION_TOOL_NAME) return questionCancelled();
 	return planDecision(false);
 }
+
+function validateInteractionResponse(pending: PendingInteraction, response: Record<string, unknown>): Record<string, unknown> {
+	const outcome = asRecord(response.outcome);
+	if (!outcome || typeof outcome.outcome !== "string") return pending.cancelResponse;
+	if (pending.kind === "permission" && pending.view.kind === "permission") {
+		if (outcome.outcome === "cancelled") return { outcome: { outcome: "cancelled" } };
+		if (outcome.outcome === "selected" && typeof outcome.optionId === "string" && pending.view.options.some((option) => option.id === outcome.optionId)) {
+			return { outcome: { outcome: "selected", optionId: outcome.optionId } };
+		}
+		return pending.cancelResponse;
+	}
+	if (pending.kind === "plan") {
+		if (outcome.outcome === "accepted") return { outcome: { outcome: "accepted" } };
+		if (outcome.outcome === "cancelled") return { outcome: { outcome: "cancelled" } };
+		if (outcome.outcome === "rejected") return { outcome: { outcome: "rejected", ...(typeof outcome.reason === "string" ? { reason: outcome.reason.slice(0, 2_000) } : {}) } };
+		return pending.cancelResponse;
+	}
+	if (pending.kind === "question" && pending.view.kind === "question") {
+		if (outcome.outcome === "cancelled") return { outcome: { outcome: "cancelled" } };
+		if (outcome.outcome === "skipped") return { outcome: { outcome: "skipped", ...(typeof outcome.reason === "string" ? { reason: outcome.reason.slice(0, 2_000) } : {}) } };
+		if (outcome.outcome !== "answered" || !Array.isArray(outcome.answers)) return pending.cancelResponse;
+		const answers: Array<{ questionId: string; selectedOptionIds: string[] }> = [];
+		const seen = new Set<string>();
+		for (const value of outcome.answers) {
+			const answer = asRecord(value);
+			if (!answer || typeof answer.questionId !== "string" || !Array.isArray(answer.selectedOptionIds) || seen.has(answer.questionId)) return pending.cancelResponse;
+			const question = pending.view.questions.find((item) => item.id === answer.questionId);
+			if (!question) return pending.cancelResponse;
+			const selected = answer.selectedOptionIds.filter((item): item is string => typeof item === "string");
+			if (selected.length !== answer.selectedOptionIds.length || new Set(selected).size !== selected.length || selected.some((id) => !question.options.some((option) => option.id === id)) || (!question.allowMultiple && selected.length !== 1)) return pending.cancelResponse;
+			seen.add(answer.questionId);
+			answers.push({ questionId: answer.questionId, selectedOptionIds: selected });
+		}
+		if (answers.length !== pending.view.questions.length) return pending.cancelResponse;
+		return { outcome: { outcome: "answered", answers } };
+	}
+	return pending.cancelResponse;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined { return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined; }
 
 function messagesFingerprint(messages: Context["messages"]): string { return createHash("sha256").update(messages.map(messageFingerprint).join("\n")).digest("hex"); }
 function messageFingerprint(message: Context["messages"][number]): string {

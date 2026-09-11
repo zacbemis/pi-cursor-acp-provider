@@ -20,7 +20,13 @@ Qualified locally against Cursor Agent `2026.09.02-c22c1a3` and ACP v1.
 
 ## Install
 
-Until an npm release is published:
+After the 0.1.0 npm release is published, install the package listed in Pi's package gallery:
+
+```bash
+pi install npm:pi-cursor-acp-provider
+```
+
+The release candidate can be installed directly from GitHub:
 
 ```bash
 pi install git:github.com/zacbemis/pi-cursor-acp-provider
@@ -131,4 +137,4 @@ Live smoke tests performed during implementation verified:
 - dynamic selection of `cursor-acp/gpt-5.4` with low reasoning;
 - Pi MCP canary discovery, invocation, tool-result continuation, and cleanup in an isolated temporary workspace.
 
-Detailed research, architecture, risks, and source references are under [`docs/`](docs/README.md).
+Detailed research, architecture, risks, and source references are under [`docs/`](docs/README.md). See [`SECURITY.md`](SECURITY.md) for vulnerability reporting and [`docs/SECURITY-REVIEW.md`](docs/SECURITY-REVIEW.md) for the 0.1.0 audit.

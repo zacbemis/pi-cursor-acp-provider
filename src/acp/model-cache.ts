@@ -6,6 +6,7 @@ import { parseModelExtension } from "../models.js";
 
 const DEFAULT_PATH = path.join(os.homedir(), ".pi", "agent", "cursor-acp-provider", "models.json");
 export const MODEL_CACHE_MAX_AGE_MS = 24 * 60 * 60_000;
+const MAX_CACHE_BYTES = 2 * 1024 * 1024;
 
 interface ModelCacheFile {
 	version: 1;
@@ -21,11 +22,13 @@ export function loadModelCache(
 ): CursorModelDefinition[] | undefined {
 	if (!cursorVersion) return undefined;
 	try {
+		if (fs.statSync(file).size > MAX_CACHE_BYTES) return undefined;
 		const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as Partial<ModelCacheFile>;
 		if (
 			parsed.version !== 1 ||
 			parsed.cursorVersion !== cursorVersion ||
 			typeof parsed.fetchedAt !== "number" ||
+			parsed.fetchedAt > Date.now() + 5 * 60_000 ||
 			Date.now() - parsed.fetchedAt > maxAgeMs ||
 			!Array.isArray(parsed.models)
 		) return undefined;

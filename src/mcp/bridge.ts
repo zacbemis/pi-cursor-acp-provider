@@ -84,7 +84,9 @@ export class PiMcpBridge {
 		this.server = undefined;
 		this.url = undefined;
 		if (!server) return;
-		await new Promise<void>((resolve) => server.close(() => resolve()));
+		const closed = new Promise<void>((resolve) => server.close(() => resolve()));
+		server.closeAllConnections?.();
+		await closed;
 	}
 
 	private descriptor(): AcpMcpServer {
@@ -100,6 +102,10 @@ export class PiMcpBridge {
 	private async handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
 		if (request.url !== "/mcp" || request.method !== "POST") {
 			response.writeHead(405).end();
+			return;
+		}
+		if (!this.validRequestOrigin(request)) {
+			response.writeHead(403).end();
 			return;
 		}
 		if (!validBearerToken(request.headers.authorization, this.token)) {
@@ -144,6 +150,17 @@ export class PiMcpBridge {
 			await protocol.close();
 		}
 	}
+
+	private validRequestOrigin(request: IncomingMessage): boolean {
+		if (!this.url) return false;
+		const endpoint = new URL(this.url);
+		if (request.headers.host !== endpoint.host) return false;
+		const origin = request.headers.origin;
+		if (origin === undefined) return true;
+		if (Array.isArray(origin)) return false;
+		try { return new URL(origin).origin === endpoint.origin; }
+		catch { return false; }
+	}
 }
 
 function projectTools(tools: readonly Tool[], omissions: string[]): BridgeTool[] {
@@ -173,7 +190,7 @@ function projectTools(tools: readonly Tool[], omissions: string[]): BridgeTool[]
 		output.push({
 			mcpName,
 			piName: tool.name,
-			description: tool.description,
+			description: tool.description.slice(0, 8_000),
 			inputSchema,
 			originalSchema: tool.parameters,
 		});
@@ -214,7 +231,7 @@ function sanitizeSchema(value: unknown, depth = 0): Record<string, unknown> | un
 		if (additional) output.additionalProperties = additional;
 	}
 	if (source.properties && typeof source.properties === "object" && !Array.isArray(source.properties)) {
-		const properties: Record<string, unknown> = {};
+		const properties: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
 		for (const [name, schema] of Object.entries(source.properties as Record<string, unknown>)) {
 			const sanitized = sanitizeSchema(schema, depth + 1);
 			if (sanitized) properties[name] = sanitized;

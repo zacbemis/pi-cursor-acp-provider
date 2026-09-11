@@ -21,6 +21,7 @@ Research was performed on **2026-09-11** and the initial provider implementation
 | [PROPOSED-ARCHITECTURE.md](PROPOSED-ARCHITECTURE.md) | First-class Pi provider design and Antigravity reuse map |
 | [IMPLEMENTATION-AND-TEST-PLAN.md](IMPLEMENTATION-AND-TEST-PLAN.md) | Phases, acceptance criteria, compatibility matrix, and release gates |
 | [RISKS-AND-OPEN-QUESTIONS.md](RISKS-AND-OPEN-QUESTIONS.md) | Risk register and unresolved decisions |
+| [SECURITY-REVIEW.md](SECURITY-REVIEW.md) | Final 0.1.0 security audit, fixes, and accepted boundaries |
 | [SOURCES.md](SOURCES.md) | Versioned source inventory and links |
 
 ## Recommended reading order

@@ -17,7 +17,7 @@
     "url": "https://github.com/zacbemis/pi-cursor-acp-provider/issues"
   },
   "keywords": ["pi-package", "pi-extension", "cursor", "acp", "agent-client-protocol", "provider"],
-  "files": ["extensions", "src", "docs", "README.md", "LICENSE"],
+  "files": ["extensions", "src", "docs", "README.md", "SECURITY.md", "CHANGELOG.md", "LICENSE"],
   "pi": {
     "extensions": ["./extensions/index.ts"]
   },
@@ -29,6 +29,7 @@
     "test:live": "PI_CURSOR_ACP_LIVE=1 vitest run test/live.test.ts",
     "check": "npm run typecheck && npm test",
     "pack:check": "npm pack --dry-run",
+    "test:packed": "node scripts/packed-install-smoke.mjs",
     "prepublishOnly": "npm run check"
   },
   "peerDependencies": {

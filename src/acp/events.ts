@@ -7,7 +7,7 @@ export type AcpActivity =
 	| { type: "unknown"; updateType: string };
 
 export function cursorActionRequired(modelId: string, delta: string): string | undefined {
-	if (!/check your settings to continue/iu.test(delta)) return undefined;
+	if (delta.trim().toLowerCase() !== "check your settings to continue") return undefined;
 	if (/fable/iu.test(modelId)) {
 		return "Cursor requires acceptance of Claude Fable 5/5.1's data-retention policy before this model can run. Open the Cursor web dashboard, go to Settings → Models/Model Access → Claude Fable 5.1 → View Policy, review and accept it, then retry. For a team account, an administrator may need to accept it. The provider cannot accept this policy on your behalf. See https://cursor.com/docs/models/claude-fable-5";
 	}

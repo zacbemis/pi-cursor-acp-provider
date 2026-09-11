@@ -134,9 +134,8 @@ function enqueueFrame(
 }
 
 function isKnownCompatibilityNoise(text: string): boolean {
-	// Chromium writes this exact status line to inherited stdout when an OAuth
-	// Some agents write compatibility noise before the first JSON-RPC frame.
-	// that child output share its otherwise NDJSON-only stdout stream.
+	// Some agents write this known browser-launch status line before the first
+	// JSON-RPC frame. Ignore only the exact line; all other noise fails closed.
 	return text.trim() === "Opening in existing browser session.";
 }
 

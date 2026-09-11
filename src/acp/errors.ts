@@ -28,5 +28,6 @@ export function redact(value: string): string {
 		.replace(/(authorization\s*[:=]\s*bearer\s+)[^\s"']+/giu, "$1[redacted]")
 		.replace(/((?:api[_-]?key|auth[_-]?token|token)\s*[:=]\s*)[^\s,"']+/giu, "$1[redacted]")
 		.replace(/(CURSOR_(?:API_KEY|AUTH_TOKEN)=)[^\s]+/gu, "$1[redacted]")
+		.replace(/([?&](?:code|access_token|refresh_token|api_key|auth_token)=)[^&\s]+/giu, "$1[redacted]")
 		.slice(-16_384);
 }

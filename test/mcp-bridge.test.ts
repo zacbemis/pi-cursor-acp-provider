@@ -43,6 +43,16 @@ describe("PiMcpBridge", () => {
 				body: "{}",
 			});
 			expect(unauthorized.status).toBe(401);
+			const crossOrigin = await fetch(descriptor.url, {
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+					origin: "https://attacker.invalid",
+					authorization: descriptor.headers[0]!.value,
+				},
+				body: "{}",
+			});
+			expect(crossOrigin.status).toBe(403);
 		} finally {
 			await client.close();
 			await bridge.close();

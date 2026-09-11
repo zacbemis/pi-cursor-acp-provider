@@ -5,6 +5,13 @@ export interface CursorQuestion { id: string; prompt: string; options: CursorQue
 export interface CursorAskQuestion { toolCallId: string; title?: string; questions: CursorQuestion[]; }
 export interface CursorCreatePlan { toolCallId: string; name?: string; overview?: string; plan: string; todos: Array<Record<string, unknown>>; phases: Array<Record<string, unknown>>; }
 
+const MAX_QUESTIONS = 16;
+const MAX_OPTIONS = 64;
+const MAX_ID_CHARS = 256;
+const MAX_LABEL_CHARS = 2_000;
+const MAX_PROMPT_CHARS = 16_000;
+const MAX_PLAN_CHARS = 256_000;
+
 export type CursorExtensionInteraction =
 	| { kind: "question"; request: CursorAskQuestion }
 	| { kind: "plan"; request: CursorCreatePlan };
@@ -40,29 +47,29 @@ export function planDecision(accepted: boolean, reason?: string): Record<string,
 }
 
 function parseQuestion(params: Record<string, unknown>): CursorAskQuestion {
-	if (typeof params.toolCallId !== "string" || !Array.isArray(params.questions)) throw RequestError.invalidParams(params, "Cursor question is malformed");
+	if (typeof params.toolCallId !== "string" || !params.toolCallId || params.toolCallId.length > MAX_ID_CHARS || !Array.isArray(params.questions) || params.questions.length === 0 || params.questions.length > MAX_QUESTIONS) throw RequestError.invalidParams(params, "Cursor question is malformed or too large");
 	const questions = params.questions.map((value) => {
 		const item = record(value);
-		if (!item || typeof item.id !== "string" || typeof item.prompt !== "string" || !Array.isArray(item.options)) throw RequestError.invalidParams(value, "Cursor question is malformed");
+		if (!item || typeof item.id !== "string" || !item.id || item.id.length > MAX_ID_CHARS || typeof item.prompt !== "string" || item.prompt.length > MAX_PROMPT_CHARS || !Array.isArray(item.options) || item.options.length === 0 || item.options.length > MAX_OPTIONS) throw RequestError.invalidParams(value, "Cursor question is malformed or too large");
 		const options = item.options.map((option) => {
 			const candidate = record(option);
-			if (!candidate || typeof candidate.id !== "string" || typeof candidate.label !== "string") throw RequestError.invalidParams(option, "Cursor question option is malformed");
+			if (!candidate || typeof candidate.id !== "string" || !candidate.id || candidate.id.length > MAX_ID_CHARS || typeof candidate.label !== "string" || candidate.label.length > MAX_LABEL_CHARS) throw RequestError.invalidParams(option, "Cursor question option is malformed or too large");
 			return { id: candidate.id, label: candidate.label };
 		});
 		return { id: item.id, prompt: item.prompt, options, allowMultiple: item.allowMultiple === true };
 	});
-	return { toolCallId: params.toolCallId, ...(typeof params.title === "string" ? { title: params.title } : {}), questions };
+	return { toolCallId: params.toolCallId, ...(typeof params.title === "string" ? { title: params.title.slice(0, MAX_LABEL_CHARS) } : {}), questions };
 }
 
 function parsePlan(params: Record<string, unknown>): CursorCreatePlan {
-	if (typeof params.toolCallId !== "string" || typeof params.plan !== "string") throw RequestError.invalidParams(params, "Cursor plan is malformed");
+	if (typeof params.toolCallId !== "string" || !params.toolCallId || params.toolCallId.length > MAX_ID_CHARS || typeof params.plan !== "string" || params.plan.length > MAX_PLAN_CHARS) throw RequestError.invalidParams(params, "Cursor plan is malformed or too large");
 	return {
 		toolCallId: params.toolCallId,
-		...(typeof params.name === "string" ? { name: params.name } : {}),
-		...(typeof params.overview === "string" ? { overview: params.overview } : {}),
+		...(typeof params.name === "string" ? { name: params.name.slice(0, MAX_LABEL_CHARS) } : {}),
+		...(typeof params.overview === "string" ? { overview: params.overview.slice(0, MAX_PROMPT_CHARS) } : {}),
 		plan: params.plan,
-		todos: Array.isArray(params.todos) ? params.todos.filter((item): item is Record<string, unknown> => record(item) !== undefined) : [],
-		phases: Array.isArray(params.phases) ? params.phases.filter((item): item is Record<string, unknown> => record(item) !== undefined) : [],
+		todos: Array.isArray(params.todos) ? params.todos.slice(0, 256).filter((item): item is Record<string, unknown> => record(item) !== undefined) : [],
+		phases: Array.isArray(params.phases) ? params.phases.slice(0, 64).filter((item): item is Record<string, unknown> => record(item) !== undefined) : [],
 	};
 }
 

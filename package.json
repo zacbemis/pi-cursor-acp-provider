@@ -1,6 +1,6 @@
 {
   "name": "pi-cursor-acp-provider",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "First-class Cursor ACP provider for Pi",
   "type": "module",
   "license": "MIT",
@@ -16,12 +16,31 @@
   "bugs": {
     "url": "https://github.com/zacbemis/pi-cursor-acp-provider/issues"
   },
-  "keywords": ["pi-package", "pi-extension", "cursor", "acp", "agent-client-protocol", "provider"],
-  "files": ["extensions", "src", "docs", "README.md", "SECURITY.md", "CHANGELOG.md", "LICENSE"],
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "cursor",
+    "acp",
+    "agent-client-protocol",
+    "provider"
+  ],
+  "files": [
+    "extensions",
+    "src",
+    "docs",
+    "README.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "pi": {
-    "extensions": ["./extensions/index.ts"]
+    "extensions": [
+      "./extensions/index.ts"
+    ]
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -37,7 +56,9 @@
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@agentclientprotocol/sdk": "0.19.1",
     "@modelcontextprotocol/sdk": "1.30.0"

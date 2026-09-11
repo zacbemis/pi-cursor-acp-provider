@@ -1,5 +1,7 @@
 # Final security review
 
+> Historical review of 0.1.0. Starting in 0.1.1, the shipped default is full-access/YOLO (`--force`), not prompting. See the current SECURITY.md for this intentional change in default authority.
+
 Review date: **2026-09-11**  
 Target release: **0.1.0**
 

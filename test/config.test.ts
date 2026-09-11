@@ -5,9 +5,17 @@ import { describe, expect, it } from "vitest";
 import { loadConfig, saveConfig } from "../src/config.js";
 
 describe("config", () => {
-	it("defaults safe", () => {
+	it("defaults to full-access for new installs", () => {
 		const file = path.join(os.tmpdir(), crypto.randomUUID(), "missing.json");
-		expect(loadConfig(file)).toEqual({ permissions: "prompt", mode: "agent", piTools: true });
+		expect(loadConfig(file)).toEqual({ permissions: "full-access", mode: "agent", piTools: true });
+	});
+	it("preserves an explicitly saved prompting policy", () => {
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), "cursor-acp-policy-"));
+		try {
+			const file = path.join(root, "config.json");
+			saveConfig({ permissions: "prompt", mode: "agent", piTools: true }, file);
+			expect(loadConfig(file).permissions).toBe("prompt");
+		} finally { fs.rmSync(root, { recursive: true, force: true }); }
 	});
 	it("round trips with private permissions", () => {
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), "cursor-acp-config-"));

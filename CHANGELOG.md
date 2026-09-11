@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Default new installs to full-access/YOLO (`--force`). Cursor commands and edits may run without confirmation, subject to Cursor deny rules.
+- Preserve explicitly saved permission policies and explicit plan approvals.
+- Document the new security default and the prompting opt-out.
+
 ## 0.1.0 — 2026-09-11
 
 Initial public release.

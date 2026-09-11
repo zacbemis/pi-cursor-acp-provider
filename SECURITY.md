@@ -18,7 +18,8 @@ Pi packages execute with the permissions of the Pi process. This provider also s
 
 The provider:
 
-- defaults to Cursor's prompting policy and never enables `--force`, `--trust`, or `--approve-mcps` implicitly;
+- defaults to full-access/YOLO (`--force`) starting in 0.1.1, allowing commands and edits without confirmation subject to Cursor deny rules; explicitly saved policies are preserved, and `/cursor-acp permissions prompt` restores prompting;
+- does not enable `--trust` or `--approve-mcps`;
 - advertises no ACP client filesystem or terminal callbacks;
 - frames ACP over bounded newline-delimited JSON-RPC;
 - binds its Pi-tool MCP bridge only to loopback;

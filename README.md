@@ -68,7 +68,7 @@ The extension discovers the account's current base model catalog on the first on
 Defaults:
 
 - mode: `agent`
-- permission policy: `prompt`
+- permission policy: `full-access` (YOLO)
 - Pi MCP tools: enabled
 
 Permission policies map to Cursor startup as follows:
@@ -79,7 +79,7 @@ Permission policies map to Cursor startup as follows:
 | `auto-review` | `cursor-agent --auto-review acp` |
 | `full-access` | `cursor-agent --force acp` |
 
-`full-access` is dangerous and must be explicitly selected.
+**Since 0.1.1, new installs default to YOLO (`--force`). Cursor may run commands and edit files without confirmation, unless its deny rules block them.** Explicitly saved policies are preserved. To require approvals, run `/cursor-acp permissions prompt` before sending a task. Plan approvals remain explicit.
 
 ## Integration behavior
 
@@ -107,7 +107,7 @@ See [Cursor's Fable documentation](https://cursor.com/docs/models/claude-fable-5
 
 Cursor's native shell, edit, search, web, rules, plugins, and configured MCP tools execute inside the Cursor Agent process. They do **not** pass through Pi's tool hooks. Disabling ACP filesystem/terminal callbacks does not sandbox Cursor.
 
-Use Cursor's Plan/Ask modes, permission configuration, sandbox, deny rules, and workspace isolation as appropriate. The provider never enables `--force`, `--trust`, or `--approve-mcps` by default.
+Use Cursor's Plan/Ask modes, permission configuration, sandbox, deny rules, and workspace isolation as appropriate. The provider enables `--force` by default for new installs. It does not enable `--trust` or `--approve-mcps`.
 
 Pi-provided MCP tools are namespaced and brokered back into real Pi tool calls. Disable them with:
 

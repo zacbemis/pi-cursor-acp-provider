@@ -17,7 +17,7 @@ const CONFIG_ROOT = path.join(os.homedir(), ".pi", "agent", "cursor-acp-provider
 export const CONFIG_PATH = path.join(CONFIG_ROOT, "config.json");
 
 const DEFAULT_CONFIG: CursorAcpConfig = {
-	permissions: "prompt",
+	permissions: "full-access",
 	mode: "agent",
 	piTools: true,
 };

@@ -113,6 +113,14 @@ export class CursorAcpConnection {
 		return this.withAbort(this.withDeadline(this.connection.loadSession({ sessionId, cwd, mcpServers }), this.operationTimeoutMs, "session/load"), signal);
 	}
 
+	async setModel(sessionId: string, modelId: string, signal?: AbortSignal): Promise<void> {
+		await this.withAbort(this.withDeadline(this.connection.unstable_setSessionModel({ sessionId, modelId }), this.operationTimeoutMs, "session/set_model"), signal);
+	}
+
+	async setMode(sessionId: string, modeId: string, signal?: AbortSignal): Promise<void> {
+		await this.withAbort(this.withDeadline(this.connection.setSessionMode({ sessionId, modeId }), this.operationTimeoutMs, "session/set_mode"), signal);
+	}
+
 	async setConfig(sessionId: string, configId: string, value: string | boolean, signal?: AbortSignal): Promise<SessionConfigOption[]> {
 		const request = typeof value === "boolean" ? { sessionId, configId, type: "boolean" as const, value } : { sessionId, configId, value };
 		const response = await this.withAbort(this.withDeadline(this.connection.setSessionConfigOption(request), this.operationTimeoutMs, "session/set_config_option"), signal);

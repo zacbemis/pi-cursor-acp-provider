@@ -57,7 +57,7 @@ Implications:
 - rebuild a fresh Cursor session from Pi context for Pi branch/fork divergence;
 - image content is supported;
 - do not claim fork support;
-- MCP behavior still needs an end-to-end tool-call probe despite advertised capability.
+- MCP behavior must be qualified behaviorally rather than inferred from this capability (the implementation canary described below now passes on this build).
 
 ## Session setup
 
@@ -246,9 +246,21 @@ cursor-agent --force acp
 
 This ordering matches current T3 Code.
 
+## Implementation canaries
+
+After implementation, additional live tests through the actual TypeScript runtime and Pi extension verified:
+
+- runtime model discovery returned 38 base models;
+- `pi -p` invoked `cursor-acp/default` and returned the requested exact response;
+- Pi selected `cursor-acp/gpt-5.4` with low reasoning and received the requested exact response;
+- in an isolated temporary workspace, Cursor discovered the authenticated HTTP MCP bridge, invoked `pi_echo` with the canary payload, paused as a Pi tool call, received the simulated Pi tool result, and completed the same ACP prompt;
+- all test processes and temporary workspace resources were closed afterward.
+
+No destructive or workspace-modifying live prompt was used.
+
 ## Qualification still required
 
-The research did not execute destructive or workspace-modifying prompts. Before implementation is called complete, add isolated live tests for:
+Before a release is considered broadly qualified, add isolated live tests for:
 
 - standard permission request, each allow/reject/cancel path;
 - `cursor/ask_question` response round trip;
@@ -256,7 +268,7 @@ The research did not execute destructive or workspace-modifying prompts. Before 
 - todo/task/generated-image notification shapes;
 - image prompt input;
 - cancel during model setup, generation, permission wait, and tool execution;
-- injected HTTP MCP server discovery and tool invocation;
+- injected HTTP MCP server discovery and tool invocation on every supported Cursor version/OS;
 - `--auto-review` and `--force` semantics in ACP mode;
 - load after multiple turns and after CLI restart/update;
 - auth expiry and re-login;

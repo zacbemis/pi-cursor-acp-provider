@@ -17,8 +17,11 @@ import { CursorRuntime } from "./runtime.js";
 
 export interface CursorProviderBundle { provider: Provider<"cursor-acp">; runtime: CursorRuntime; }
 
-export function createCursorProvider(runtime = new CursorRuntime(loadConfig())): CursorProviderBundle {
-	let models = [...FALLBACK_MODELS];
+export function createCursorProvider(
+	runtime = new CursorRuntime(loadConfig()),
+	initialModels: readonly Model<"cursor-acp">[] = FALLBACK_MODELS,
+): CursorProviderBundle {
+	let models = [...initialModels];
 	const provider: Provider<"cursor-acp"> = {
 		id: "cursor-acp",
 		name: "Cursor (ACP)",

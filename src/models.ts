@@ -44,12 +44,11 @@ export function resolveReasoningConfig(
 	options: readonly SessionConfigOption[],
 	level: ThinkingLevel | undefined,
 ): { id: string; value: string | boolean }[] {
-	if (!level) return [];
 	const thought = options.find((option) => option.category === "thought_level" || /effort|reasoning/iu.test(`${option.id} ${option.name}`));
 	const thinking = options.find((option) => /thinking/iu.test(`${option.id} ${option.name}`) && option.category !== "thought_level");
 	const output: { id: string; value: string | boolean }[] = [];
 	if (thinking) {
-		const enabled = true;
+		const enabled = level !== undefined;
 		if (thinking.type === "boolean") output.push({ id: thinking.id, value: enabled });
 		else {
 			const allowed = flattenOptions(thinking.options).map((item) => item.value);
@@ -59,7 +58,9 @@ export function resolveReasoningConfig(
 	}
 	if (thought?.type === "select") {
 		const allowed = flattenOptions(thought.options).map((item) => item.value);
-		const value = closestReasoning(level, allowed);
+		const value = level === undefined
+			? allowed.find((candidate) => candidate === "none" || candidate === "off")
+			: closestReasoning(level, allowed);
 		if (value) output.push({ id: thought.id, value });
 	}
 	return output;

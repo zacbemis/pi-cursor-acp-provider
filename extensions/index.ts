@@ -13,11 +13,17 @@ import {
 	QUESTION_TOOL_NAME,
 } from "../src/constants.js";
 import { createCursorProvider } from "../src/provider.js";
-import type { InteractionToolResult, InteractionView } from "../src/runtime.js";
+import { CursorRuntime, type InteractionToolResult, type InteractionView } from "../src/runtime.js";
 
-export default function cursorAcpExtension(pi: ExtensionAPI): void {
+export default async function cursorAcpExtension(pi: ExtensionAPI): Promise<void> {
 	let config = loadConfig();
-	const { provider, runtime } = createCursorProvider();
+	const runtime = new CursorRuntime(config);
+	let initialModels;
+	if (process.env.PI_OFFLINE !== "1") {
+		try { initialModels = (await runtime.discoverModels()).map((item) => item.model); }
+		catch { /* auth/CLI problems remain visible through doctor and first use */ }
+	}
+	const { provider } = createCursorProvider(runtime, initialModels);
 	pi.registerProvider(provider);
 
 	pi.registerTool({

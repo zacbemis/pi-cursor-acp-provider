@@ -1,5 +1,7 @@
 # Executive summary
 
+> **Implementation update (2026-09-11):** The recommended architecture is now implemented in the repository's initial `0.1.0` codebase. Unit/mock tests and live provider/model/MCP canaries pass. Items explicitly listed as current limitations in the root README remain follow-up work.
+
 ## Recommendation
 
 **Build it.** Cursor now ships an official ACP v1 server through `cursor-agent acp` (also installed as `agent acp`). A first-class Pi provider can use the same broad architecture as `pi-antigravity-acp-provider` without depending on Cursor's private Connect/protobuf wire protocol.
@@ -50,7 +52,7 @@ Against `cursor-agent 2026.09.02-c22c1a3`:
 - Pi's custom `streamSimple` provider surface can represent Cursor's text, thinking, stop reasons, cancellation, models, and images.
 - The official ACP TypeScript SDK supports generic `extMethod` and `extNotification` callbacks, so Cursor-specific methods can be handled without replacing the transport.
 - The Antigravity provider's pending-permission mechanism can be generalized for Cursor's standard permission request plus `cursor/ask_question` and `cursor/create_plan`.
-- Pi tool routing can probably reuse the Antigravity MCP bridge because Cursor advertises HTTP/SSE MCP. Historical reports say some Cursor builds ignored `session/new.mcpServers`, so this remains a qualification gate rather than an assumption.
+- Pi tool routing reuses the Antigravity MCP bridge design. A live isolated canary on the qualified build confirmed server discovery, a `pi_echo` invocation, Pi tool-result continuation, and cleanup. Historical builds ignored `session/new.mcpServers`, so this remains part of every release's qualification matrix.
 
 ## Non-negotiable correctness requirements
 

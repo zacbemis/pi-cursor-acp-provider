@@ -255,7 +255,7 @@ T3 may pass a per-thread authenticated HTTP MCP endpoint in `session/new`. This 
 
 ### Adopt conditionally
 
-Use the existing bridge, but gate it on a live test where Cursor actually connects and calls a canary tool. Issue `repoprompt/repoprompt-ce#158` reports that a June 2026 Cursor build advertised HTTP/SSE MCP but ignored injected servers. The issue remains open; current behavior was not qualified in this research.
+Use the existing bridge, but gate it on a live test where Cursor actually connects and calls a canary tool. Issue `repoprompt/repoprompt-ce#158` reports that a June 2026 Cursor build advertised HTTP/SSE MCP but ignored injected servers. The initial implementation's isolated canary passed on `2026.09.02-c22c1a3`; retain the test for every supported release.
 
 ## Overall assessment
 

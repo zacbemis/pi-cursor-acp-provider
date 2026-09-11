@@ -1,12 +1,12 @@
 # Research documentation
 
-Research was performed on **2026-09-11**. Documents distinguish current observations from proposals because Cursor CLI and ACP are moving quickly.
+Research was performed on **2026-09-11** and the initial provider implementation followed the same day. Documents distinguish observations from proposals because Cursor CLI and ACP are moving quickly. For current installation and feature status, see the project [README](../README.md).
 
 ## Status vocabulary
 
 - **Observed** — verified in source, official documentation, a cited issue, or a local live probe.
 - **Inferred** — a conclusion drawn from observed behavior that still needs a focused test.
-- **Proposed** — recommended design for this project; not implemented.
+- **Proposed** — recommended design at research time; check the implementation-status notes and root README for what has since landed.
 - **Qualification gate** — behavior that must pass against the supported Cursor CLI build before release.
 
 ## Documents

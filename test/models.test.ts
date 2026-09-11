@@ -11,6 +11,7 @@ describe("Cursor model projection", () => {
 		expect(definitions[0]!.model).toMatchObject({ id: "gpt-test", reasoning: true, contextWindow: 1_000_000 });
 		expect(definitions[0]!.model.thinkingLevelMap?.xhigh).toBe("xhigh");
 		expect(resolveReasoningConfig(definitions[0]!.configOptions, "xhigh")).toEqual([{ id: "reasoning", value: "extra-high" }]);
+		expect(resolveReasoningConfig(definitions[0]!.configOptions, undefined)).toEqual([{ id: "reasoning", value: "none" }]);
 	});
 
 	it("accepts modelId compatibility fields and rejects malformed ids", () => {

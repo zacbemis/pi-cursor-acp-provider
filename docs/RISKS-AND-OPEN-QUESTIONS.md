@@ -80,16 +80,16 @@ Recommendation: surface a Pi plan-approval interaction. Headless default is canc
 
 ### 7. Pi tools through MCP
 
-Open until live canary. Questions:
+The initial isolated live canary passed on `2026.09.02-c22c1a3`: Cursor connected to the injected HTTP server, called `pi_echo`, and continued after the Pi result. Remaining questions:
 
-- Does current Cursor ACP actually connect to an injected HTTP/SSE MCP server?
+- Does each supported Cursor ACP release/OS connect to an injected HTTP/SSE MCP server reliably?
 - Does it request approval for that server or each tool?
 - Does `--approve-mcps` suppress only server approval or tool permissions too?
 - How are same-name native and MCP tools presented?
 - Can server configuration be refreshed without a new ACP session?
 - Do MCP calls emit enough tool-call updates to maintain a good Pi transcript?
 
-Recommendation: architect for the bridge but keep it behind a qualification feature flag.
+Implementation status: the bridge is enabled by default, can be disabled with `/cursor-acp pi-tools off`, and must remain in the per-release qualification suite.
 
 ### 8. Native Cursor tools versus Pi tools
 

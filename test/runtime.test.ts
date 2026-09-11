@@ -6,7 +6,7 @@ import type { Context, Model } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 import { CursorAcpConnection } from "../src/acp/connection.js";
 import { AcpSessionStore } from "../src/acp/session-store.js";
-import { INTERACTION_RESULT_KIND, PERMISSION_TOOL_NAME, QUESTION_TOOL_NAME } from "../src/constants.js";
+import { INTERACTION_RESULT_KIND, PERMISSION_TOOL_NAME, PLAN_TOOL_NAME, QUESTION_TOOL_NAME } from "../src/constants.js";
 import { CursorRuntime } from "../src/runtime.js";
 
 const fixture = fileURLToPath(new URL("./fixtures/fake-cursor-agent.mjs", import.meta.url));
@@ -64,6 +64,20 @@ describe("Cursor runtime", () => {
 			const context: Context = { systemPrompt: "", tools: [], messages: [...base.messages, first, { role: "toolResult", toolCallId: call.id, toolName: call.name, content: [{ type: "text", text: "answered" }], isError: false, timestamp: Date.now(), details: { kind: INTERACTION_RESULT_KIND, requestId: call.id, response: { outcome: { outcome: "answered", answers: [{ questionId: "q1", selectedOptionIds: ["a1"] }] } } } }] };
 			const second = await finish(runtime, context, "question-session");
 			expect(visible(second)).toContain('"outcome":"answered"');
+		} finally { await runtime.close(); }
+	});
+
+	it("returns nested Cursor plan approval", async () => {
+		const runtime = make();
+		try {
+			const base: Context = { systemPrompt: "", messages: [user("plan")], tools: [] };
+			const first = await finish(runtime, base, "plan-session");
+			const call = first.content.find((item) => item.type === "toolCall");
+			if (!call || call.type !== "toolCall") throw new Error("missing call");
+			expect(call.name).toBe(PLAN_TOOL_NAME);
+			const context: Context = { systemPrompt: "", tools: [], messages: [...base.messages, first, { role: "toolResult", toolCallId: call.id, toolName: call.name, content: [{ type: "text", text: "accepted" }], isError: false, timestamp: Date.now(), details: { kind: INTERACTION_RESULT_KIND, requestId: call.id, response: { outcome: { outcome: "accepted" } } } }] };
+			const second = await finish(runtime, context, "plan-session");
+			expect(visible(second)).toContain('{"outcome":{"outcome":"accepted"}}');
 		} finally { await runtime.close(); }
 	});
 

@@ -407,7 +407,7 @@ export class CursorRuntime {
 		else if (!modeOption && binding.session.modes?.availableModes.some((mode) => mode.id === this.config.mode) && binding.session.modes.currentModeId !== this.config.mode) await binding.connection.setMode(binding.session.sessionId, this.config.mode, signal);
 
 		for (const desired of [
-			...(reasoning ? resolveReasoningConfig(options, reasoning) : []),
+			...resolveReasoningConfig(options, reasoning),
 			...(this.config.context ? [{ id: "context", value: this.config.context }] : []),
 			...(this.config.fast === undefined ? [] : [{ id: "fast", value: this.config.fast }]),
 		]) {

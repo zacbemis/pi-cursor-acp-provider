@@ -170,6 +170,10 @@ export class CursorRuntime {
 		} finally { await connection.close(); }
 	}
 
+	setDefinitions(definitions: readonly CursorModelDefinition[]): void {
+		if (definitions.length) this.definitions = new Map(definitions.map((item) => [item.id, item]));
+	}
+
 	getInteraction(id: string): InteractionView | undefined {
 		for (const binding of this.resolvedBindings) if (binding.interaction?.id === id) return binding.interaction.view;
 		return undefined;

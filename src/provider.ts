@@ -10,18 +10,25 @@ import type {
 } from "@earendil-works/pi-ai";
 
 import { hasCursorLogin, loginCursor } from "./acp/auth.js";
+import { saveModelCache } from "./acp/model-cache.js";
+import { cursorVersion } from "./acp/process.js";
 import { MANAGED_AUTH_MARKER } from "./constants.js";
 import { loadConfig } from "./config.js";
 import { FALLBACK_MODELS } from "./models.js";
 import { CursorRuntime } from "./runtime.js";
 
-export interface CursorProviderBundle { provider: Provider<"cursor-acp">; runtime: CursorRuntime; }
+export interface CursorProviderBundle {
+	provider: Provider<"cursor-acp">;
+	runtime: CursorRuntime;
+	setModels: (next: readonly Model<"cursor-acp">[]) => void;
+}
 
 export function createCursorProvider(
 	runtime = new CursorRuntime(loadConfig()),
 	initialModels: readonly Model<"cursor-acp">[] = FALLBACK_MODELS,
 ): CursorProviderBundle {
 	let models = [...initialModels];
+	const setModels = (next: readonly Model<"cursor-acp">[]) => { models = [...next]; };
 	const provider: Provider<"cursor-acp"> = {
 		id: "cursor-acp",
 		name: "Cursor (ACP)",
@@ -68,13 +75,14 @@ export function createCursorProvider(
 				const definitions = await runtime.discoverModels(apiKey, context.signal);
 				const discovered = definitions.map((item) => item.model);
 				if (!discovered.length) return;
-				await context.publish({ update: () => { models = discovered; } });
+				saveModelCache(definitions, cursorVersion());
+				await context.publish({ update: () => setModels(discovered) });
 			} catch { /* retain offline fallback */ }
 		},
 		stream(model, context, options) { return stream(runtime, model, context, options); },
 		streamSimple(model, context, options) { return stream(runtime, model, context, options); },
 	};
-	return { provider, runtime };
+	return { provider, runtime, setModels };
 }
 
 function stream(runtime: CursorRuntime, model: Model<"cursor-acp">, context: Context, options: ApiStreamOptions<"cursor-acp"> | SimpleStreamOptions | undefined): AssistantMessageEventStream {

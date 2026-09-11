@@ -45,13 +45,14 @@ pi --model cursor-acp/gpt-5.4 --thinking high
 pi --list-models cursor-acp
 ```
 
-The extension discovers the account's current base model catalog during online startup. `PI_OFFLINE=1` skips discovery and retains the conservative `default` model.
+The extension discovers the account's current base model catalog on the first online startup and caches it for 24 hours, keyed by Cursor CLI version. Warm startup uses the cache and does not launch ACP discovery. `PI_OFFLINE=1` skips discovery and uses a valid cache or the conservative `default` model.
 
 ## Commands
 
 ```text
 /cursor-acp doctor
 /cursor-acp doctor-verbose
+/cursor-acp models refresh|clear
 /cursor-acp mode agent|plan|ask
 /cursor-acp permissions prompt|auto-review|full-access
 /cursor-acp pi-tools on|off
@@ -105,7 +106,7 @@ Pi-provided MCP tools are namespaced and brokered back into real Pi tool calls. 
 - Cursor ACP did not provide authoritative token, cache, or cost usage in qualification; the provider reports zero rather than inventing precision.
 - Todo/subagent/generated-image extension notifications currently render as bounded status/thinking text rather than rich widgets.
 - ACP upstream is developing v2, while the qualified Cursor build negotiates v1.
-- Dynamic model discovery adds one short-lived Cursor process during online Pi startup.
+- A cold or expired model cache adds one short-lived Cursor process during startup; warm startup uses the 24-hour cache. Use `/cursor-acp models refresh` for immediate account-catalog changes.
 - Session import/list UI and arbitrary fast/context controls are not exposed yet; current Cursor/model defaults are retained.
 
 ## Development

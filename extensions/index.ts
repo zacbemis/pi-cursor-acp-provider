@@ -2,6 +2,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-c
 import { Type } from "typebox";
 
 import { hasCursorLogin } from "../src/acp/auth.js";
+import { clearModelCache, loadModelCache, saveModelCache } from "../src/acp/model-cache.js";
 import { cursorVersion, resolveCursorCommand } from "../src/acp/process.js";
 import { planDecision, questionAnswered, questionCancelled } from "../src/acp/cursor-extension.js";
 import { isCursorMode, isPermissionMode, loadConfig, saveConfig, type CursorAcpConfig } from "../src/config.js";
@@ -18,12 +19,17 @@ import { CursorRuntime, type InteractionToolResult, type InteractionView } from 
 export default async function cursorAcpExtension(pi: ExtensionAPI): Promise<void> {
 	let config = loadConfig();
 	const runtime = new CursorRuntime(config);
-	let initialModels;
-	if (process.env.PI_OFFLINE !== "1") {
-		try { initialModels = (await runtime.discoverModels()).map((item) => item.model); }
-		catch { /* auth/CLI problems remain visible through doctor and first use */ }
+	let cliVersion: string | undefined;
+	try { cliVersion = cursorVersion(); } catch { /* CLI errors remain visible through doctor */ }
+	let definitions = loadModelCache(cliVersion);
+	if (!definitions && process.env.PI_OFFLINE !== "1") {
+		try {
+			definitions = await runtime.discoverModels();
+			saveModelCache(definitions, cliVersion);
+		} catch { /* auth/CLI problems remain visible through doctor and first use */ }
 	}
-	const { provider } = createCursorProvider(runtime, initialModels);
+	if (definitions) runtime.setDefinitions(definitions);
+	const { provider, setModels } = createCursorProvider(runtime, definitions?.map((item) => item.model));
 	pi.registerProvider(provider);
 
 	pi.registerTool({
@@ -100,6 +106,21 @@ export default async function cursorAcpExtension(pi: ExtensionAPI): Promise<void
 		description: "Inspect or configure the Cursor ACP provider",
 		handler: async (args, ctx) => {
 			const [command = "doctor", value] = args.trim().split(/\s+/u);
+			if (command === "models") {
+				if (value === "clear") {
+					clearModelCache();
+					ctx.ui.notify("Cursor model cache cleared. Restart Pi or run /cursor-acp models refresh.", "info");
+					return;
+				}
+				if (value && value !== "refresh") return usage(ctx, "Usage: /cursor-acp models [refresh|clear]");
+				ctx.ui.notify("Refreshing Cursor models…", "info");
+				const refreshed = await runtime.discoverModels();
+				runtime.setDefinitions(refreshed);
+				setModels(refreshed.map((item) => item.model));
+				saveModelCache(refreshed, cursorVersion());
+				ctx.ui.notify(`Refreshed ${refreshed.length} Cursor models.`, "info");
+				return;
+			}
 			if (command === "mode") {
 				if (!isCursorMode(value)) return usage(ctx, "Usage: /cursor-acp mode [agent|plan|ask]");
 				config = { ...config, mode: value }; await update(config); ctx.ui.notify(`Cursor mode: ${value}`, "info"); return;
@@ -114,7 +135,7 @@ export default async function cursorAcpExtension(pi: ExtensionAPI): Promise<void
 				config = { ...config, piTools: value === "on" }; await update(config); ctx.ui.notify(`Cursor Pi MCP tools: ${value}`, "info"); return;
 			}
 			if (command === "sessions" && value === "clear") { runtime.clearSessions(); ctx.ui.notify("Saved Cursor ACP session bindings cleared.", "info"); return; }
-			if (command !== "doctor" && command !== "status" && command !== "doctor-verbose") return usage(ctx, "Usage: /cursor-acp [doctor|status|mode|permissions|pi-tools|sessions clear]");
+			if (command !== "doctor" && command !== "status" && command !== "doctor-verbose") return usage(ctx, "Usage: /cursor-acp [doctor|status|models|mode|permissions|pi-tools|sessions clear]");
 			let binary = "not found"; let version: string | undefined; let authenticated = false;
 			try { binary = resolveCursorCommand(); version = cursorVersion(binary); authenticated = await hasCursorLogin(binary); } catch { /* shown below */ }
 			const snapshot = await runtime.snapshot(command === "doctor-verbose");

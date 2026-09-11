@@ -64,7 +64,8 @@ export function createCursorProvider(
 		async refreshModels(context: RefreshModelsContext) {
 			if (!context.allowNetwork) return;
 			try {
-				const definitions = await runtime.discoverModels(context.signal);
+				const apiKey = context.credential?.type === "api_key" ? context.credential.key : MANAGED_AUTH_MARKER;
+				const definitions = await runtime.discoverModels(apiKey, context.signal);
 				const discovered = definitions.map((item) => item.model);
 				if (!discovered.length) return;
 				await context.publish({ update: () => { models = discovered; } });

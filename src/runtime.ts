@@ -149,9 +149,13 @@ export class CursorRuntime {
 		return writer;
 	}
 
-	async discoverModels(signal?: AbortSignal): Promise<CursorModelDefinition[]> {
+	async discoverModels(apiKey?: string, signal?: AbortSignal): Promise<CursorModelDefinition[]> {
 		this.assertActive();
-		const connection = this.connectionFactory({ cwd: process.cwd(), permissionMode: "prompt" });
+		const connection = this.connectionFactory({
+			cwd: process.cwd(),
+			permissionMode: "prompt",
+			...(apiKey && apiKey !== MANAGED_AUTH_MARKER ? { env: { ...process.env, CURSOR_API_KEY: apiKey } } : {}),
+		});
 		try {
 			const initialize = await connection.initialize();
 			await authenticateCursor(connection, initialize, signal);

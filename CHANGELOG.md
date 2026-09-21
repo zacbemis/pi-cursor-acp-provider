@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- Fix unhandled ACP request rejections when model-catalog refresh is cancelled by selecting a model or closing the picker.
+- Cancel discovery initialization promptly and skip discovery when already cancelled.
+- Serialize shared session-store save, remove, and clear transactions across Pi processes, with stale-lock recovery.
+- Add cancellation and multi-process persistence regression tests.
+
 ## 0.1.1
 
 - Default new installs to full-access/YOLO (`--force`). Cursor commands and edits may run without confirmation, subject to Cursor deny rules.

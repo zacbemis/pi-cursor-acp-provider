@@ -84,12 +84,14 @@ export class CursorAcpConnection {
 			},
 			clientInfo: { name: "pi-cursor-acp-provider", title: "Pi Cursor ACP Provider", version: PACKAGE_VERSION },
 		}), options.initializeTimeoutMs ?? 30_000, "initialize");
+		// Initialization can outlive a cancelled catalog refresh.
+		void this.initialized.catch(() => undefined);
 	}
 
 	setHandlers(handlers: CursorConnectionHandlers): void { this.handlers = handlers; }
 
-	async initialize(): Promise<InitializeResponse> {
-		const response = await this.initialized;
+	async initialize(signal?: AbortSignal): Promise<InitializeResponse> {
+		const response = await this.withAbort(this.initialized, signal);
 		if (response.protocolVersion !== PROTOCOL_VERSION) {
 			await this.close();
 			throw new CursorAcpError("protocol", `Unsupported ACP protocol version ${String(response.protocolVersion)}`);
@@ -157,6 +159,9 @@ export class CursorAcpConnection {
 	async close(): Promise<void> { this.closePromise ??= this.process.close(); await this.closePromise; }
 
 	private async withAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+		// The operation has already started. Observe it before any cancellation
+		// branch closes the transport, even when we will not await its result.
+		void promise.catch(() => undefined);
 		if (!signal) return promise;
 		if (signal.aborted) { await this.close(); throw abortError(); }
 		return new Promise((resolve, reject) => {

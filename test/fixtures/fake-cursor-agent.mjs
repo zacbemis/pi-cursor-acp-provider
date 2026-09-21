@@ -24,6 +24,7 @@ for await (const line of rl) {
     send({ jsonrpc: "2.0", id: pending.promptId, result: { stopReason: "end_turn" } }); pending = undefined; continue;
   }
   if (method === "initialize") {
+    if (scenario === "initialize-timeout") continue;
     if (scenario === "malformed") { process.stdout.write("not-json\n"); continue; }
     send({ jsonrpc: "2.0", id, result: { protocolVersion: 1, agentInfo: { name: "fake-cursor", version: "1" }, authMethods: [{ id: "cursor_login", name: "Cursor Login" }], agentCapabilities: { loadSession: true, promptCapabilities: { image: true, embeddedContext: false }, mcpCapabilities: { http: true }, sessionCapabilities: { list: {} } } } });
   } else if (method === "authenticate") send({ jsonrpc: "2.0", id, result: {} });

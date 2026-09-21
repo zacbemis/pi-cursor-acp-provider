@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { withStoreLock } from "./store-lock.js";
 
 export interface SavedSessionRecord {
 	piSessionId: string;
@@ -21,13 +22,15 @@ export class AcpSessionStore {
 	constructor(private readonly file = DEFAULT_PATH) {}
 	get(piSessionId: string): SavedSessionRecord | undefined { return this.read().filter((item) => Date.now() - item.lastActive <= MAX_AGE_MS).find((item) => item.piSessionId === piSessionId); }
 	save(record: SavedSessionRecord): void {
-		const records = this.read().filter((item) => item.piSessionId !== record.piSessionId);
-		records.push(record);
-		records.sort((a, b) => b.lastActive - a.lastActive);
-		this.write(records.slice(0, MAX_RECORDS));
+		withStoreLock(this.file, () => {
+			const records = this.read().filter((item) => item.piSessionId !== record.piSessionId);
+			records.push(record);
+			records.sort((a, b) => b.lastActive - a.lastActive);
+			this.write(records.slice(0, MAX_RECORDS));
+		});
 	}
-	remove(piSessionId: string): void { this.write(this.read().filter((item) => item.piSessionId !== piSessionId)); }
-	clear(): void { fs.rmSync(this.file, { force: true }); }
+	remove(piSessionId: string): void { withStoreLock(this.file, () => this.write(this.read().filter((item) => item.piSessionId !== piSessionId))); }
+	clear(): void { withStoreLock(this.file, () => fs.rmSync(this.file, { force: true })); }
 	private read(): SavedSessionRecord[] {
 		try {
 			if (fs.statSync(this.file).size > 1024 * 1024) return [];

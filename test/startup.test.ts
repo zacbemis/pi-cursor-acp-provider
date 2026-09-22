@@ -10,7 +10,7 @@ vi.mock("../src/acp/auth.js", () => ({ hasCursorLogin: vi.fn(), loginCursor: vi.
 afterEach(() => { vi.clearAllMocks(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("startup CLI checks", () => {
-	it("discovers the Cursor command once per process, but still checks its version", async () => {
+	it("reuses the discovery version once, then checks it afresh on demand", async () => {
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), "cursor-startup-"));
 		const oldPath = process.env.PATH;
 		const oldCommand = process.env.PI_CURSOR_ACP_COMMAND;
@@ -25,6 +25,8 @@ describe("startup CLI checks", () => {
 			const { resolveCursorCommand, cursorVersion } = await import("../src/acp/process.js");
 			expect(resolveCursorCommand()).toBe("cursor-agent");
 			expect(resolveCursorCommand()).toBe("cursor-agent");
+			expect(cursorVersion()).toBe("v1");
+			expect(fs.readFileSync(calls, "utf8").trim().split("\n")).toEqual(["--version"]);
 			expect(cursorVersion()).toBe("v1");
 			expect(fs.readFileSync(calls, "utf8").trim().split("\n")).toEqual(["--version", "--version"]);
 		} finally {

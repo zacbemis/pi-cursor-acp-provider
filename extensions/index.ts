@@ -16,18 +16,15 @@ import {
 import { createCursorProvider } from "../src/provider.js";
 import { CursorRuntime, type InteractionToolResult, type InteractionView } from "../src/runtime.js";
 
-export default async function cursorAcpExtension(pi: ExtensionAPI): Promise<void> {
+export default function cursorAcpExtension(pi: ExtensionAPI): void {
 	let config = loadConfig();
 	const runtime = new CursorRuntime(config);
 	let cliVersion: string | undefined;
 	try { cliVersion = cursorVersion(); } catch { /* CLI errors remain visible through doctor */ }
-	let definitions = loadModelCache(cliVersion);
-	if (!definitions && process.env.PI_OFFLINE !== "1") {
-		try {
-			definitions = await runtime.discoverModels();
-			saveModelCache(definitions, cliVersion);
-		} catch { /* auth/CLI problems remain visible through doctor and first use */ }
-	}
+	// Registration must be immediate so Pi can select cached Cursor models at
+	// startup. Missing/expired catalogs use the default model until /model or
+	// /cursor-acp models refresh explicitly requests live discovery.
+	const definitions = loadModelCache(cliVersion);
 	if (definitions) runtime.setDefinitions(definitions);
 	const { provider, setModels } = createCursorProvider(runtime, definitions?.map((item) => item.model));
 	pi.registerProvider(provider);

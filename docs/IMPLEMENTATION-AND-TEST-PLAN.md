@@ -5,7 +5,7 @@
 | Phase | Status |
 |---|---|
 | Transport/process | implemented and mock/live tested |
-| Provider/model discovery | implemented; version-keyed 24-hour disk cache, explicit refresh, and safe fallback |
+| Provider/model discovery | implemented; version-keyed 30-day last-known disk cache, deferred discovery via model picker/explicit refresh, and safe default fallback |
 | Streaming/context/images | implemented; text/thought live tested, image unit path tested |
 | Persistence/replay/branches | implemented and mock tested |
 | Permissions/questions/plans | implemented with nested outcomes and mock tests; live interactive matrix remains |

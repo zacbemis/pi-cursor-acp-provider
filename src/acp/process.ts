@@ -10,6 +10,7 @@ const STDERR_LIMIT = 16 * 1024;
 const KILL_GRACE_MS = 1_500;
 let nextGeneration = 1;
 let discoveredCursorCommand: string | undefined;
+let discoveredCursorVersion: string | undefined;
 
 export interface CursorProcessOptions {
 	cwd: string;
@@ -35,7 +36,11 @@ export function resolveCursorCommand(): string {
 	if (discoveredCursorCommand) return discoveredCursorCommand;
 	for (const command of ["cursor-agent", "agent"]) {
 		const result = spawnSync(command, ["--version"], { encoding: "utf8", timeout: 5_000, windowsHide: true });
-		if (!result.error && result.status === 0) return (discoveredCursorCommand = command);
+		if (!result.error && result.status === 0) {
+			discoveredCursorCommand = command;
+			discoveredCursorVersion = result.stdout.trim() || result.stderr.trim() || undefined;
+			return command;
+		}
 	}
 	throw new CursorAcpError(
 		"spawn",
@@ -50,6 +55,13 @@ export function cursorAcpArgs(mode: PermissionMode): string[] {
 }
 
 export function cursorVersion(command = resolveCursorCommand()): string | undefined {
+	// The discovery probe already queried this version. Reuse it once for the
+	// startup cache lookup; subsequent calls (doctor/refresh) query it afresh.
+	if (command === discoveredCursorCommand && discoveredCursorVersion) {
+		const version = discoveredCursorVersion;
+		discoveredCursorVersion = undefined;
+		return version;
+	}
 	const result = spawnSync(command, ["--version"], { encoding: "utf8", timeout: 5_000, windowsHide: true });
 	return result.status === 0 ? result.stdout.trim() || result.stderr.trim() || undefined : undefined;
 }

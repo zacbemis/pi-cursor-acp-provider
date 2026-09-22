@@ -5,7 +5,8 @@ import type { CursorModelDefinition } from "../models.js";
 import { parseModelExtension } from "../models.js";
 
 const DEFAULT_PATH = path.join(os.homedir(), ".pi", "agent", "cursor-acp-provider", "models.json");
-export const MODEL_CACHE_MAX_AGE_MS = 24 * 60 * 60_000;
+// Last-known models are safe to show before online refresh, but cannot linger indefinitely.
+export const MODEL_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60_000;
 const MAX_CACHE_BYTES = 2 * 1024 * 1024;
 
 interface ModelCacheFile {

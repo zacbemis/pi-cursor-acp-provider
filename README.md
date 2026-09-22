@@ -51,7 +51,7 @@ pi --model cursor-acp/gpt-5.4 --thinking high
 pi --list-models cursor-acp
 ```
 
-The extension discovers the account's current base model catalog on the first online startup and caches it for 24 hours, keyed by Cursor CLI version. Warm startup uses the cache and does not launch ACP discovery. CLI auth checks are shared across model probes for 30 seconds, and CLI command discovery is cached for the Pi process. `PI_OFFLINE=1` skips discovery and uses a valid cache or the conservative `default` model.
+The extension registers immediately from a version-matched, last-known model catalog (retained for up to 30 days) without starting the Cursor ACP server. If there is no usable cache, `cursor-acp/default` is available immediately. Opening Pi's `/model` picker refreshes the catalog online; `/cursor-acp models refresh` forces discovery as well. CLI auth checks are shared across model probes for 30 seconds, and the startup CLI version probe is reused for the cache lookup. `PI_OFFLINE=1` keeps the cached catalog or the conservative `default` model without network discovery.
 
 ## Commands
 
@@ -120,7 +120,7 @@ Pi-provided MCP tools are namespaced and brokered back into real Pi tool calls. 
 - Cursor ACP did not provide authoritative token, cache, or cost usage in qualification; the provider reports zero rather than inventing precision.
 - Todo/subagent/generated-image extension notifications currently render as bounded status/thinking text rather than rich widgets.
 - ACP upstream is developing v2, while the qualified Cursor build negotiates v1.
-- A cold or expired model cache adds one short-lived Cursor process during startup; warm startup uses the 24-hour cache. Use `/cursor-acp models refresh` for immediate account-catalog changes.
+- A new install without a cached catalog initially shows only `cursor-acp/default`. Open `/model` or run `/cursor-acp models refresh` to discover all account models; discovery can take a few seconds. A cached catalog is retained for up to 30 days when the CLI version is unchanged. If the CLI changes or the cache expires, the provider returns to `default` until the next refresh.
 - Session import/list UI and arbitrary fast/context controls are not exposed yet; current Cursor/model defaults are retained.
 
 ## Development

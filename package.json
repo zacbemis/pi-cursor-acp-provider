@@ -1,6 +1,6 @@
 {
   "name": "pi-cursor-acp-provider",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "First-class Cursor ACP provider for Pi",
   "type": "module",
   "license": "MIT",

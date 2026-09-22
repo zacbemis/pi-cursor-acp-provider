@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- Reuse the CLI version returned by command discovery instead of running `--version` twice on startup.
+- Register the provider immediately from a version-matched last-known model catalog; defer ACP model discovery to Pi's model picker or `/cursor-acp models refresh`.
+- Retain cached models for up to 30 days. Without a usable catalog, only `cursor-acp/default` is listed until refresh; offline startup never launches a discovery process.
+- Add regression tests for startup cache misses, on-demand refresh, and stale catalog bounds.
+
 ## 0.1.3
 
 - Cache Cursor CLI command discovery for the Pi process instead of probing `--version` during every auth check.

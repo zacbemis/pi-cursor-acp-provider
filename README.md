@@ -51,7 +51,7 @@ pi --model cursor-acp/gpt-5.4 --thinking high
 pi --list-models cursor-acp
 ```
 
-The extension discovers the account's current base model catalog on the first online startup and caches it for 24 hours, keyed by Cursor CLI version. Warm startup uses the cache and does not launch ACP discovery. `PI_OFFLINE=1` skips discovery and uses a valid cache or the conservative `default` model.
+The extension discovers the account's current base model catalog on the first online startup and caches it for 24 hours, keyed by Cursor CLI version. Warm startup uses the cache and does not launch ACP discovery. CLI auth checks are shared across model probes for 30 seconds, and CLI command discovery is cached for the Pi process. `PI_OFFLINE=1` skips discovery and uses a valid cache or the conservative `default` model.
 
 ## Commands
 

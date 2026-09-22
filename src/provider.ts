@@ -29,6 +29,17 @@ export function createCursorProvider(
 ): CursorProviderBundle {
 	let models = [...initialModels];
 	const setModels = (next: readonly Model<"cursor-acp">[]) => { models = [...next]; };
+	// Pi checks provider auth for multiple models during startup. Share the CLI
+	// check rather than launching `cursor-agent status` once per model.
+	let loginCheck: Promise<boolean> | undefined;
+	let loginCheckedAt = 0;
+	const checkCliLogin = (): Promise<boolean> => {
+		if (!loginCheck || Date.now() - loginCheckedAt >= 30_000) {
+			loginCheckedAt = Date.now();
+			loginCheck = hasCursorLogin().catch(() => false);
+		}
+		return loginCheck;
+	};
 	const provider: Provider<"cursor-acp"> = {
 		id: "cursor-acp",
 		name: "Cursor (ACP)",
@@ -39,6 +50,7 @@ export function createCursorProvider(
 				async login(interaction) {
 					interaction.notify({ type: "progress", message: "Checking Cursor Agent CLI authentication…" });
 					await loginCursor(interaction.signal, (message) => interaction.notify({ type: "info", message }));
+					loginCheck = undefined;
 					return { type: "oauth", refresh: MANAGED_AUTH_MARKER, access: MANAGED_AUTH_MARKER, expires: Number.MAX_SAFE_INTEGER };
 				},
 				async refresh(credential) { return credential; },
@@ -55,7 +67,7 @@ export function createCursorProvider(
 					if (credential?.key) return { type: "api_key", source: "Pi auth store" };
 					if (await ctx.env("CURSOR_API_KEY")) return { type: "api_key", source: "CURSOR_API_KEY" };
 					if (await ctx.env("CURSOR_AUTH_TOKEN")) return { type: "api_key", source: "CURSOR_AUTH_TOKEN" };
-					if (await hasCursorLogin()) return { type: "api_key", source: "Cursor Agent CLI login" };
+					if (await checkCliLogin()) return { type: "api_key", source: "Cursor Agent CLI login" };
 					return undefined;
 				},
 				async resolve({ ctx, credential }) {

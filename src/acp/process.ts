@@ -9,6 +9,7 @@ import { CursorAcpError, redact } from "./errors.js";
 const STDERR_LIMIT = 16 * 1024;
 const KILL_GRACE_MS = 1_500;
 let nextGeneration = 1;
+let discoveredCursorCommand: string | undefined;
 
 export interface CursorProcessOptions {
 	cwd: string;
@@ -31,9 +32,10 @@ export function resolveSupervisorEntry(): string {
 export function resolveCursorCommand(): string {
 	const configured = process.env.PI_CURSOR_ACP_COMMAND?.trim();
 	if (configured) return configured;
+	if (discoveredCursorCommand) return discoveredCursorCommand;
 	for (const command of ["cursor-agent", "agent"]) {
 		const result = spawnSync(command, ["--version"], { encoding: "utf8", timeout: 5_000, windowsHide: true });
-		if (!result.error && result.status === 0) return command;
+		if (!result.error && result.status === 0) return (discoveredCursorCommand = command);
 	}
 	throw new CursorAcpError(
 		"spawn",

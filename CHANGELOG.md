@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+- Cache Cursor CLI command discovery for the Pi process instead of probing `--version` during every auth check.
+- Share short-lived CLI login checks across startup model auth probes; invalidate after interactive login.
+- Add startup regression tests for command discovery, concurrent auth checks, cache expiry, and login invalidation.
+
 ## 0.1.2
 
 - Fix unhandled ACP request rejections when model-catalog refresh is cancelled by selecting a model or closing the picker.
